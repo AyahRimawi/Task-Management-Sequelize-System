@@ -30,6 +30,13 @@ const express = require("express");
 require("dotenv").config();
 // ========== ********** ==========
 
+// -----------------------------------------------
+// =====================
+const sequelize = require("./config/db"); // استيراد sequelize من models
+
+// =====================
+// -----------------------------------------------
+
 const app = express();
 
 app.use(express.json());
@@ -43,7 +50,7 @@ const cors = require("cors");
 app.use(cors());
 // ========== ********** ==========
 
-const PORT = 9000;
+const PORT = 5000;
 // ========== ********** ==========
 
 // بتذكر لما شرحت ال module وحكيت ممكن اعمل وحدة خاصة في بس بعطيها مسار ثابت وهاد الي صار هون
@@ -57,4 +64,19 @@ console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const startServer = async () => {
+  try {
+    // مزامنة قاعدة البيانات
+    await sequelize.sync({ force: false }); // استخدم { force: true } لإعادة إنشاء الجداول من الصفر
+    console.log("Database & tables created!");
+
+    // بدء تشغيل الخادم
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (error) {
+    console.error("Error creating tables:", error);
+  }
+};
+
+startServer();

@@ -32,7 +32,6 @@ router.post("/login", userController.login);
 
 router.post("/view", auth, userController.view);
 
-
 // تعريف المسار المحمي
 
 router.get("/protected-route", auth, userController.protectedRoute);
