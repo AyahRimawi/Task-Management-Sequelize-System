@@ -1,294 +1,69 @@
-// import React, { useEffect, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-// // import Cookies from "js-cookie";
-
-// function Task() {
-//   const [userInfo, setUserInfo] = useState(null);
-//   const [tasks, setTasks] = useState([]);
-//   const [isLoading, setIsLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
-//   const [editingTask, setEditingTask] = useState(null);
-//   const [update, setUpdate] = useState(false);
-//   const navigate = useNavigate();
-
-//   const TaskItem = ({ task, onEdit, onDelete }) => (
-//     <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-//       <h3 className="text-xl font-semibold">{task.title}</h3>
-//       <p className="text-gray-600">{task.description}</p>
-//       <div className="mt-2 flex space-x-2">
-//         <button
-//           onClick={() => onEdit(task)}
-//           className="text-blue-500 hover:underline"
-//         >
-//           Edit
-//         </button>
-//         <button
-//           onClick={() => onDelete(task.id)}
-//           className="text-red-500 hover:underline"
-//         >
-//           Delete
-//         </button>
-//       </div>
-//     </div>
-//   );
-
-//   const TaskForm = ({ task, onSubmit, onCancel }) => {
-//     const [title, setTitle] = useState(task ? task.title : "");
-//     const [description, setDescription] = useState(
-//       task ? task.description : ""
-//     );
-
-//     const handleSubmit = (e, id) => {
-//       e.preventDefault();
-//       onSubmit({ userId: id, title, description });
-//     };
-
-//     return (
-//       <form
-//         onSubmit={(e) => handleSubmit(e, userInfo.id)}
-//         className="space-y-4"
-//       >
-//         <div>
-//           <label htmlFor="title" className="block text-sm font-medium mb-1">
-//             Title
-//           </label>
-//           <input
-//             id="title"
-//             type="text"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//             required
-//             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-//           />
-//         </div>
-//         <div>
-//           <label
-//             htmlFor="description"
-//             className="block text-sm font-medium mb-1"
-//           >
-//             Description
-//           </label>
-//           <textarea
-//             id="description"
-//             value={description}
-//             onChange={(e) => setDescription(e.target.value)}
-//             required
-//             rows={4}
-//             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-//           />
-//         </div>
-//         <div className="flex justify-end space-x-2">
-//           <button
-//             type="button"
-//             onClick={onCancel}
-//             className="px-4 py-2 bg-gray-300 text-white rounded-md"
-//           >
-//             Cancel
-//           </button>
-//           <button
-//             type="submit"
-//             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-//           >
-//             {task ? "Update" : "Create"} Task
-//           </button>
-//         </div>
-//       </form>
-//     );
-//   };
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setIsLoading(true);
-//         const token = Cookies.get("token");
-//         if (!token) {
-//           alert("No token found, please login.");
-//           navigate("/login");
-//           return;
-//         }
-//         const response = await axios.get(
-//           "http://localhost:5000/api/users/protected-route",
-//           {
-//             headers: {
-//               Authorization: `Bearer ${token}`,
-//             },
-//           }
-//         );
-//         setUserInfo(response.data);
-
-//         const tasks = await axios.get(
-//           `http://localhost:5000/api/tasks/get-tasks/${response.data.id}`
-//         );
-//         setTasks(tasks.data);
-//       } catch (err) {
-//         setError("Failed to fetch data. Please try again.");
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [update]);
-
-//   const handleCreateTask = async (newTask) => {
-//     await axios.post("http://localhost:5000/api/tasks/add-task", {
-//       userId: userInfo.id,
-//       title: newTask.title,
-//       description: newTask.description,
-//     });
-//     setTasks([...tasks, { ...newTask }]);
-//     setIsTaskFormOpen(false);
-//   };
-
-//   const handleEditTask = (task) => {
-//     setEditingTask(task);
-//     setIsTaskFormOpen(true);
-//     setUpdate(false);
-//   };
-
-//   const handleUpdateTask = async (updatedTask) => {
-//     setTasks(tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
-//     setIsTaskFormOpen(false);
-//     setEditingTask(null);
-//     await axios.put("http://localhost:5000/api/tasks/update-task", {
-//       title: updatedTask.title,
-//       description: updatedTask.description,
-//       id: updatedTask.id,
-//     });
-//     setUpdate(true);
-//   };
-
-//   const handleDeleteTask = (taskId) => {
-//     setTasks(tasks.filter((t) => t.id !== taskId));
-//     axios.put("http://localhost:5000/api/tasks/delete-task", {
-//       id: taskId,
-//     });
-//     setUpdate(true);
-//   };
-
-//   const handleLogout = () => {
-//     Cookies.remove("token");
-//     navigate("/login");
-//   };
-
-//   if (isLoading)
-//     return (
-//       <div className="flex justify-center items-center h-screen">
-//         <div className="w-16 h-16 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
-//       </div>
-//     );
-
-//   if (error) return <div className="text-red-500">{error}</div>;
-
-//   return (
-//     <>
-//       <header className="bg-gray-800 text-white p-4">
-//         <div className="flex justify-between items-center">
-//           <h1 className="text-xl font-semibold">Task Management System</h1>
-//           <button
-//             onClick={handleLogout}
-//             className="flex items-center text-white"
-//           >
-//             Logout
-//           </button>
-//         </div>
-//       </header>
-//       <main className="container mx-auto p-4">
-//         <h2 className="text-2xl font-semibold mb-4">
-//           Welcome, {userInfo.username}
-//         </h2>
-//         <button
-//           onClick={() => setIsTaskFormOpen(true)}
-//           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 mb-4"
-//         >
-//           Create New Task
-//         </button>
-//         {tasks.map((task) => (
-//           <TaskItem
-//             key={task.id}
-//             task={task}
-//             onEdit={handleEditTask}
-//             onDelete={handleDeleteTask}
-//           />
-//         ))}
-//         {isTaskFormOpen && (
-//           <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-//             <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-//               <h3 className="text-xl font-semibold mb-4">
-//                 {editingTask ? "Edit Task" : "Create New Task"}
-//               </h3>
-//               <TaskForm
-//                 task={editingTask}
-//                 onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
-//                 onCancel={() => {
-//                   setIsTaskFormOpen(false);
-//                   setEditingTask(null);
-//                 }}
-//               />
-//             </div>
-//           </div>
-//         )}
-//       </main>
-//     </>
-//   );
-// }
-
-// export default Task;
-
 // import React, { useState, useEffect } from "react";
 // import axios from "axios";
 
-// function Task() {
+// const Tasks = () => {
 //   const [tasks, setTasks] = useState([]);
-//   // ---------------انشاء مهمة جديدة------------------
-//   const [newTask, setNewTask] = useState({
-//     task_name: "",
-//     task_description: "",
-//   });
-//   // ---------------------- تعديل على مهمة --------------------------
-//   // const [editTask, setEditTask] = useState(null); /
+//   const [newTask, setNewTask] = useState({ title: "", description: "" });
+//   const [editingTask, setEditingTask] = useState(null);
+
+//   const token = localStorage.getItem("token");
+//   const userId = localStorage.getItem("userId");
 
 //   useEffect(() => {
-//     fetchTasks();
-//   }, []);
-//   // ---------------- جلب المهمام -----------------
+//     if (userId) {
+//       fetchTasks();
+//     }
+//   }, [userId]);
+
 //   const fetchTasks = async () => {
 //     try {
-//       const response = await axios.get("http://localhost:5000/tasks", {
-//         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-//       });
+//       const response = await axios.get(
+//         `http://localhost:5000/api/tasks/get-tasks/${userId}`,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
 //       setTasks(response.data);
 //     } catch (error) {
 //       console.error("Error fetching tasks:", error);
 //     }
 //   };
-//   // --------------------- انشاء مهمة جديدة ----------------------------
-//   const handleCreateTask = async (e) => {
+
+//   const addTask = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const response = await axios.post(
-//         "http://localhost:5000/tasks",
-//         newTask,
-//         {
-//           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-//         }
+//       await axios.post(
+//         "http://localhost:5000/api/tasks/add-task",
+//         { ...newTask, userId },
+//         { headers: { Authorization: `Bearer ${token}` } }
 //       );
-//       setNewTask({ task_name: "", task_description: "" });
+//       setNewTask({ title: "", description: "" });
 //       fetchTasks();
 //     } catch (error) {
-//       console.error(
-//         "خطأ في إنشاء المهمة:",
-//         error.response ? error.response.data : error.message
-//       );
+//       console.error("Error adding task:", error);
 //     }
 //   };
-//   // --------------------------------- حذف مهمة --------------------------------------
-//   const handleDeleteTask = async (id) => {
+
+//   const updateTask = async (e) => {
+//     e.preventDefault();
 //     try {
-//       await axios.delete(`http://localhost:5000/tasks/${id}`, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+//       await axios.put(
+//         `http://localhost:5000/api/tasks/update-task/${editingTask.id}`,
+//         { title: editingTask.title, description: editingTask.description },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setEditingTask(null);
+//       fetchTasks();
+//     } catch (error) {
+//       console.error("Error updating task:", error);
+//     }
+//   };
+
+//   const deleteTask = async (id) => {
+//     try {
+//       await axios.delete(`http://localhost:5000/api/tasks/delete-task/${id}`, {
+//         headers: { Authorization: `Bearer ${token}` },
+//         data: { id },
 //       });
 //       fetchTasks();
 //     } catch (error) {
@@ -296,190 +71,254 @@
 //     }
 //   };
 
+//   const handleInputChange = (e, setter) => {
+//     const { name, value } = e.target;
+//     setter((prevState) => ({ ...prevState, [name]: value }));
+//   };
+
 //   return (
 //     <div>
-//       <h2>tasks</h2>
-//       <form onSubmit={handleCreateTask}>
+//       <h1>Tasks</h1>
+
+//       <form onSubmit={addTask}>
 //         <input
 //           type="text"
-//           placeholder="Task Name"
-//           value={newTask.task_name}
-//           onChange={(e) =>
-//             setNewTask({ ...newTask, task_name: e.target.value })
-//           }
+//           name="title"
+//           value={newTask.title}
+//           onChange={(e) => handleInputChange(e, setNewTask)}
+//           placeholder="Title"
+//           required
 //         />
 //         <input
 //           type="text"
-//           placeholder="Task Description"
-//           value={newTask.task_description}
-//           onChange={(e) =>
-//             setNewTask({ ...newTask, task_description: e.target.value })
-//           }
+//           name="description"
+//           value={newTask.description}
+//           onChange={(e) => handleInputChange(e, setNewTask)}
+//           placeholder="Description"
+//           required
 //         />
-//         <button type="submit">Create Task</button>
+//         <button type="submit">Add Task</button>
 //       </form>
+
 //       <ul>
 //         {tasks.map((task) => (
-//           <li key={task.task_id}>
-//             {task.task_name} - {task.task_description}
-//             <button onClick={() => handleDeleteTask(task.task_id)}>
-//               Delete
-//             </button>
+//           <li key={task.id}>
+//             {editingTask && editingTask.id === task.id ? (
+//               <form onSubmit={updateTask}>
+//                 <input
+//                   type="text"
+//                   name="title"
+//                   value={editingTask.title}
+//                   onChange={(e) => handleInputChange(e, setEditingTask)}
+//                   required
+//                 />
+//                 <input
+//                   type="text"
+//                   name="description"
+//                   value={editingTask.description}
+//                   onChange={(e) => handleInputChange(e, setEditingTask)}
+//                   required
+//                 />
+//                 <button type="submit">Save</button>
+//                 <button type="button" onClick={() => setEditingTask(null)}>
+//                   Cancel
+//                 </button>
+//               </form>
+//             ) : (
+//               <>
+//                 <h3>{task.title}</h3>
+//                 <p>{task.description}</p>
+//                 <button onClick={() => setEditingTask(task)}>Edit</button>
+//                 <button onClick={() => deleteTask(task.id)}>Delete</button>
+//               </>
+//             )}
 //           </li>
 //         ))}
 //       </ul>
 //     </div>
 //   );
-// }
+// };
 
-// export default Task;
+// export default Tasks;
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/tasks";
-
-function Task() {
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [editingTask, setEditingTask] = useState(null);
 
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (userId) {
+      fetchTasks();
+    }
+  }, [userId]);
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(API_URL);
-      console.log("Tasks fetched:", response.data); // سجل البيانات التي تم جلبها
-
+      const response = await axios.get(
+        `http://localhost:5000/api/tasks/get-tasks/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setTasks(response.data);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const addTask = async (e) => {
     e.preventDefault();
-    if (editingTask) {
-      try {
-        await axios.put(`${API_URL}/${editingTask.id}`, {
-          name,
-          description,
-        });
-        console.log("Task updated");
-        setEditingTask(null);
-      } catch (error) {
-        console.error("Error updating task:", error);
-      }
-    } else {
-      try {
-        await axios.post(API_URL, { name, description});
-        console.log("Task added");
-      } catch (error) {
-        console.error("Error creating task:", error);
-      }
-    }
-    setName("");
-    setDescription("");
-    fetchTasks();
-  };
-
-  const handleEdit = (task) => {
-    setName(task.name);
-    setDescription(task.description);
-    setEditingTask(task);
-  };
-
-  const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.post(
+        "http://localhost:5000/api/tasks/add-task",
+        { ...newTask, userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNewTask({ title: "", description: "" });
+      fetchTasks();
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+
+  const updateTask = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(
+        `http://localhost:5000/api/tasks/update-task/${editingTask.id}`,
+        { title: editingTask.title, description: editingTask.description },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setEditingTask(null);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/tasks/delete-task/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { id },
+      });
       fetchTasks();
     } catch (error) {
       console.error("Error deleting task:", error);
     }
   };
 
+  const handleInputChange = (e, setter) => {
+    const { name, value } = e.target;
+    setter((prevState) => ({ ...prevState, [name]: value }));
+  };
+
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="w-full max-w-lg p-8 bg-white bg-opacity-80 shadow-lg rounded-lg">
-        <h1 className="text-3xl font-bold mb-6 text-teal-700 text-center">
-          {editingTask ? "Edit Task" : "Add Task"}
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-6">
+      <div className="w-full max-w-md p-8 bg-white bg-opacity-80 text-gray-800 rounded-lg shadow-lg">
+        <h1 className="text-3xl font-bold mb-6 text-center text-teal-700">
+          Tasks
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium mb-1 text-gray-700"
-            >
-              Task Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter task name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              required
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium mb-1 text-gray-700"
-            >
-              Task Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter task description"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              required
-            />
-          </div>
-    
+
+        <form onSubmit={addTask} className="space-y-6 mb-8">
+          <input
+            type="text"
+            name="title"
+            value={newTask.title}
+            onChange={(e) => handleInputChange(e, setNewTask)}
+            placeholder="Title"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            required
+          />
+          <input
+            type="text"
+            name="description"
+            value={newTask.description}
+            onChange={(e) => handleInputChange(e, setNewTask)}
+            placeholder="Description"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            required
+          />
           <button
             type="submit"
             className="w-full bg-teal-700 text-white py-2 rounded-md hover:bg-teal-800 transition-colors duration-200"
           >
-            {editingTask ? "Update Task" : "Add Task"}
+            Add Task
           </button>
         </form>
-        <ul className="mt-8">
+
+        <ul className="space-y-4">
           {tasks.map((task) => (
             <li
               key={task.id}
-              className="border border-gray-300 p-4 mb-4 rounded-md flex justify-between items-center bg-gray-50 shadow-sm"
+              className="p-4 bg-white border border-gray-200 rounded-md shadow-sm"
             >
-              <div>
-                <h2 className="font-bold text-lg text-gray-800">{task.name}</h2>
-                <p className="text-gray-600">{task.description}</p>
-                <p className="text-gray-500">Duration: {task.duration} hours</p>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(task)}
-                  className="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200"
-                >
-                  Delete
-                </button>
-              </div>
+              {editingTask && editingTask.id === task.id ? (
+                <form onSubmit={updateTask} className="space-y-4">
+                  <input
+                    type="text"
+                    name="title"
+                    value={editingTask.title}
+                    onChange={(e) => handleInputChange(e, setEditingTask)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="description"
+                    value={editingTask.description}
+                    onChange={(e) => handleInputChange(e, setEditingTask)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    required
+                  />
+                  <div className="flex space-x-4">
+                    <button
+                      type="submit"
+                      className="bg-teal-700 text-white py-2 px-4 rounded-md hover:bg-teal-800 transition-colors duration-200"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingTask(null)}
+                      className="bg-gray-300 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold">{task.title}</h3>
+                  <p className="text-gray-600">{task.description}</p>
+                  <div className="mt-4 flex space-x-4">
+                    <button
+                      onClick={() => setEditingTask(task)}
+                      className="bg-teal-700 text-white py-2 px-4 rounded-md hover:bg-teal-800 transition-colors duration-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="bg-red-700 text-white py-2 px-4 rounded-md hover:bg-red-800 transition-colors duration-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
       </div>
     </div>
   );
-}
+};
 
-export default Task;
+export default Tasks;
